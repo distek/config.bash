@@ -1,0 +1,92 @@
+function mkbak() {
+    cp -r "$1" "$1.bak"
+}
+
+# use vim instead of less
+function man() {
+    /usr/bin/man "$@" | col -b | vim -c 'set ft=man ts=8 nomod nolist nonu noma'
+}
+
+function spell() {
+    echo $1 | hunspell -d en_US
+}
+
+# trash instead of remove
+function tm() {
+    trashDir=$HOME/Trash/
+
+    for i in "${@}"; do
+
+        if [ -f $trashDir/$i ]; then
+            mv $trashDir/$i $trashDir/$i.$(date +%s)
+        fi
+
+        mv $i $trashDir
+
+    done
+}
+
+function ix() {
+    local opts
+    local OPTIND
+
+    [ -f "$HOME/.netrc" ] && opts='-n'
+    while getopts ":hd:i:n:" x; do
+        case $x in
+            h) echo "ix [-d ID] [-i ID] [-n N] [opts]"; return;;
+            d) $echo curl $opts -X DELETE ix.io/$OPTARG; return;;
+            i) opts="$opts -X PUT"; local id="$OPTARG";;
+            n) opts="$opts -F read:1=$OPTARG";;
+        esac
+    done
+
+    shift $(($OPTIND - 1))
+
+    [ -t 0 ] && {
+        local filename="$1"
+        shift
+        [ "$filename" ] && {
+            curl $opts -F f:1=@"$filename" $* ix.io/$id
+            return
+        }
+        echo "^C to cancel, ^D to send."
+    }
+
+    curl $opts -F f:1='<-' $* ix.io/$id
+}
+
+# Fuzzy find files and display preview of file
+function vf() {
+    f=$(fzf --preview-window=right:75% --preview "bat --color=always --style=numbers {}")
+
+    if [[ "$f" != "" ]]; then
+        vim "$f"
+    fi
+}
+
+# Fuzzy find directories and cd into selection
+function cf() {
+    if [[ ! "$1" == '' ]]; then
+        dir="$1"
+    else
+        dir="."
+    fi
+
+    dest="$(find "$dir" -type d | fzf)"
+
+    cd "$dest"
+}
+
+# Fuzzy search git log
+function gfz() {
+    git log --graph --color=always \
+        --format="%C(auto)%h%d %s %C(green)%C(bold)%cr" "$@" |
+        fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
+        --bind "ctrl-m:execute:
+                (grep -o '[a-f0-9]\{7\}' | head -1 |
+                xargs -I % sh -c 'git show % | vim -c \"set filetype=git\" -c \"noremap q :q!<CR>\" -') << 'FZF-EOF'
+                {}
+    FZF-EOF"
+}
+
+# vim: filetype=sh
