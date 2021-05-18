@@ -22,6 +22,8 @@ export PATH=$HOME/.local/bin:$PATH:$HOME/opt/REAPER/:$HOME/opt/firefox/:$HOME/.g
 export VST_PATH=$VST_PATH:$HOME/wineVSTs/so/:/usr/lib/vst/:/usr/lib/vst3/:$HOME/wineVSTs/linvst-so:/usr/lib/vst/carla.vst:$HOME/.vst:$HOME/.vst3
 export GOPATH=$HOME/Programming/golang
 export GOSRC=$HOME/Programming/golang/src
+export GOME=$HOME/Programming/golang/src/local/distek.local
+
 
 if [[ "$(uname)" == "Linux" ]]; then
     systemctl --user import-environment PATH
@@ -73,3 +75,5 @@ fi
 # This is dumb
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin:$HOME/opt"
+
+complete -C /home/distek/Programming/golang/bin/gocomplete go
