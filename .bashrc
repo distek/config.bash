@@ -1,5 +1,8 @@
 # .bashrc
 
+TERM=xterm-256color
+
+
 # Source global definitions
 if [ -f /etc/bashrc ]; then
 	. /etc/bashrc
@@ -11,11 +14,6 @@ then
     PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 fi
 
-# Uncomment the following line if you don't like systemctl's auto-paging feature:
-# export SYSTEMD_PAGER=
-
-# User specific aliases and functions
-
 export BASHCONF=$HOME/.config/bash
 
 export PATH=$HOME/.local/bin:$PATH:$HOME/opt/REAPER/:$HOME/opt/firefox/:$HOME/.gem/ruby/2.6.0/bin:$HOME/.gem/ruby/2.7.0/bin:$HOME/Programming/golang/bin:$HOME/.cargo/bin
@@ -25,16 +23,11 @@ export GOSRC=$HOME/Programming/golang/src
 export GOME=$HOME/Programming/golang/src/local/distek.local
 
 
-if [[ "$(uname)" == "Linux" ]]; then
-    systemctl --user import-environment PATH
-fi
+bind 'set show-all-if-ambiguous on'
 
-# If wanted, this starts a tmux session if none exists, or creates a
-# new session if tmux is already running (if not in a linux term)
-#[[ -z "$TMUX" && $(tty) != /dev/tty[0-9] ]] && { tmux || exec tmux new-session && exit;}
 shopt -s direxpand
-
 shopt -s histappend
+
 export HISTFILESIZE=2000000
 export HISTSIZE=2000000
 export HISTTIMEFORMAT='%F_%T '
@@ -58,7 +51,63 @@ export LESS_TERMCAP_us=$'\e[1;4;31m'
 GPG_TTY=$(tty)
 export GPG_TTY
 
-PS1="[\[\e[33;1m\]\w\[\e[0m\]] [\[\e[36;1m\]\H\[\e[0m\]] [\[\e[33;1m\]\$?\[\e[0m\]] \n[\[\e[34;1m\]\u\[\e[0m\]] > "
+# get current branch in git repo
+parse_git_branch() {
+	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+	if [ ! "${BRANCH}" == "" ]; then
+		STAT=`parse_git_dirty`
+		echo "${BRANCH}${STAT}"
+	else
+		echo "-"
+	fi
+}
+
+# get current status of git repo
+parse_git_dirty() {
+	status=`git status 2>&1 | tee`
+	dirty=`echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
+	untracked=`echo -n "${status}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
+	ahead=`echo -n "${status}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
+	newfile=`echo -n "${status}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
+	renamed=`echo -n "${status}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
+	deleted=`echo -n "${status}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
+	bits=''
+	if [ "${renamed}" == "0" ]; then
+		bits=">${bits}"
+	fi
+	if [ "${ahead}" == "0" ]; then
+		bits="*${bits}"
+	fi
+	if [ "${newfile}" == "0" ]; then
+		bits="+${bits}"
+	fi
+	if [ "${untracked}" == "0" ]; then
+		bits="?${bits}"
+	fi
+	if [ "${deleted}" == "0" ]; then
+		bits="x${bits}"
+	fi
+	if [ "${dirty}" == "0" ]; then
+		bits="!${bits}"
+	fi
+	if [ ! "${bits}" == "" ]; then
+		echo " ${bits}"
+	else
+		echo ""
+	fi
+}
+
+nonzero_return() {
+    eval exitVal=$(echo $?)
+    if [[ $exitVal > 0 ]]; then
+        echo -e "\e[31m$exitVal\e[0m"
+    else
+        echo -e "\e[32m$exitVal\e[0m"
+    fi
+}
+
+PS1="╭[\[\e[36m\]\h\[\e[m\]]─[\[\e[33m\]\w\[\e[m\]]─[\`nonzero_return\`]─[\[\e[36m\]\`parse_git_branch\`\[\e[m\]]\n"
+# Bottom of prompt in ~/.inputrc
 
 [ -r /usr/share/bash-completion/bash_completion ] && . /usr/share/bash-completion/bash_completion
 
@@ -75,5 +124,7 @@ fi
 # This is dumb
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin:$HOME/opt"
+
+# . $HOME/.cache/wal/colors-tty.sh
 
 complete -C /home/distek/Programming/golang/bin/gocomplete go
