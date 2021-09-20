@@ -8,7 +8,7 @@ if [[ $(uname) == "Linux" ]]; then
     alias ncmpc="ncmpc -C --host=127.0.2.1"
     alias xclip="xclip -sel clip"
     alias dmesg='dmesg --color=always'
-    alias update="yay -Syu --devel --timeupdate"
+    alias update="yay -Syu --devel --timeupdate --sudoloop"
 fi
 
 alias fuckoff="sudo killall -s SIGKILL"
@@ -16,5 +16,14 @@ alias ls="lsd"
 alias resource="source $HOME/.bashrc"
 alias devnull="cat > /dev/null"
 alias ip='ip -color=auto'
+alias archetype-virsh="ssh -t archetype virsh"
+alias cat="bat -p --pager=never"
+
+function pcd() {
+    cd "$(projects select)"
+}
+
+alias pdel="projects del"
+alias psave="projects save $1"
 
 # vim: filetype=sh

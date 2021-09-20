@@ -21,6 +21,7 @@ export VST_PATH=$VST_PATH:$HOME/wineVSTs/so/:/usr/lib/vst/:/usr/lib/vst3/:$HOME/
 export GOPATH=$HOME/Programming/golang
 export GOSRC=$HOME/Programming/golang/src
 export GOME=$HOME/Programming/golang/src/local/distek.local
+export GOGITHUB=$HOME/Programming/golang/src/github.com/distek
 
 
 bind 'set show-all-if-ambiguous on'
@@ -106,8 +107,10 @@ nonzero_return() {
     fi
 }
 
+PROMPT_DIRTRIM=3
 PS1="╭[\[\e[36m\]\h\[\e[m\]]─[\[\e[33m\]\w\[\e[m\]]─[\`nonzero_return\`]─[\[\e[36m\]\`parse_git_branch\`\[\e[m\]]\n"
-# Bottom of prompt in ~/.inputrc
+
+# Bottom of prompt is in ~/.inputrc
 
 [ -r /usr/share/bash-completion/bash_completion ] && . /usr/share/bash-completion/bash_completion
 
@@ -124,6 +127,8 @@ fi
 # This is dumb
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin:$HOME/opt"
+
+export NODE_PATH="/home/distek/node_modules"
 
 # . $HOME/.cache/wal/colors-tty.sh
 
