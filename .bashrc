@@ -25,6 +25,7 @@ export GOGITHUB=$HOME/Programming/golang/src/github.com/distek
 
 
 bind 'set show-all-if-ambiguous on'
+bind 'set completion-ignore-case on'
 
 shopt -s direxpand
 shopt -s histappend
@@ -36,7 +37,9 @@ export HISTCONTROL=ignoreboth
 
 PROMPT_COMMAND='history -a'
 
-. ~/.profile
+if [ -f $HOME/.profile ]; then
+    . $HOME/.profile
+fi
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
@@ -123,6 +126,16 @@ fi
 if [ -f $BASHCONF/functions ]; then
     . $BASHCONF/functions
 fi
+
+bind -m emacs-standard '"\er": redraw-current-line'
+bind -m emacs-standard -x '"\C-r": __fzf_history__'
+
+bind -m vi-insert '"\er": redraw-current-line'
+bind -m vi-insert -x '"\C-r": __fzf_history__'
+
+bind -m vi-command '"\er": redraw-current-line'
+bind -m vi-command -x '"\C-r": __fzf_history__'
+
 
 # This is dumb
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
