@@ -94,7 +94,7 @@ function zle-line-init zle-keymap-select {
         echo -ne '\e[5 q'
     fi
 
-    HOSTNAME=$(hostnamectl hostname)
+    HOSTNAME=$(cat /etc/hostname)
     COUNT=$((${COLUMNS}-(${#PWD}+${#HOSTNAME}-18+${#vcs_info_msg_0_})))
 
     PROMPT='╭(%B%F{cyan}'$HOSTNAME'%f%b)─(%(?.%B%F{green}%?%f%b.%B%F{red}%?%f%b))─(%B%F{green}'${vcs_info_msg_0_}'%f%b)─(%B%F{yellow}%'$COUNT'<...<%~%<<%f%b)
