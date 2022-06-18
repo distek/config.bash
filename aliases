@@ -1,9 +1,8 @@
-
 if [[ $(uname) == "Linux" ]]; then
     #source /usr/share/bash-completion/completions/systemctl
     #alias sc="sudo systemctl"
     #complete -F _systemctl sc
-    alias dnf="sudo dnf"
+    alias pacman="sudo pacman"
     alias fsbackup='sudo rsync -aAXv / --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found","/home/*"} $(date +%Y-%m-%d_%H-%M)'
     alias ncmpc="ncmpc -C --host=127.0.2.1"
     alias xclip="xclip -sel clip"
@@ -16,8 +15,8 @@ alias ls="lsd"
 alias resource="source $HOME/.bashrc"
 alias devnull="cat > /dev/null"
 alias ip='ip -color=auto'
-alias archetype-virsh="ssh -t archetype virsh"
 alias cat="bat -p --pager=never"
+alias lg="lazygit"
 
 function pcd() {
     cd "$(projects select)"

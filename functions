@@ -5,26 +5,6 @@ ghist() {
     rg "$@" $HOME/.bash_history
 }
 
-cd() {
-    dir="$1"
-    if [[ "$dir" == '' ]]; then
-        dir="$HOME"
-    fi
-    
-    if [ ! -d "$dir" ]; then
-        echo -n "$dir does not exist, would you like to create it? Y/n: "
-        read CHOICE
-
-        if [[ $CHOICE =~ "n" ]]; then
-            return
-        fi
-
-        mkdir -p -- "$dir"
-    fi
-
-    builtin cd -P -- "$dir"
-}
-
 __fzfcmd() {
   [ -n "$TMUX_PANE" ] && { [ "${FZF_TMUX:-0}" != 0 ] || [ -n "$FZF_TMUX_OPTS" ]; } &&
     echo "fzf-tmux ${FZF_TMUX_OPTS:--d${FZF_TMUX_HEIGHT:-40%}} -- " || echo "fzf"
@@ -60,33 +40,8 @@ function mkbak() {
     cp -r "$1" "$1.bak"
 }
 
-# use vim instead of less
-#function man() {
-#    /usr/bin/man "$@" | col -b | nvim \
-#    -c 'set ft=man ts=8 nomod nolist nonu noma' \
-#    -c "AirlineToggle" \
-#    -c "set laststatus=0" \
-#    --cmd "let g:nerdtree_vide = 1" \
-#    --cmd "set nomodeline"
-#}
-
 function spell() {
     echo $1 | hunspell -d en_US
-}
-
-# trash instead of remove
-function tm() {
-    trashDir=$HOME/Trash/
-
-    for i in "${@}"; do
-
-        if [ -f $trashDir/$i ]; then
-            mv $trashDir/$i $trashDir/$i.$(date +%s)
-        fi
-
-        mv $i $trashDir
-
-    done
 }
 
 function ix() {

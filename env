@@ -1,0 +1,9 @@
+export GOPATH=$HOME/Programming/golang
+export GOBIN=$HOME/Programming/golang/bin
+export GOSRC=$HOME/Programming/golang/src
+export GOGITHUB=$HOME/Programming/golang/src/github.com/distek
+export GOCODEBERG=$HOME/Programming/golang/src/codeberg.org/distek
+
+export WINEESYNC=1
+
+# vim: filetype=sh
