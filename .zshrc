@@ -5,7 +5,7 @@ emulate bash -c "source ~/.config/shell/tokens"
 
 autoload -Uz compinit promptinit vcs_info bashcompinit
 
-zle     -N     fzf-history-widget-accept
+zle -N fzf-history-widget-accept
 
 HISTFILE=$HOME/.zsh_history
 SAVEHIST=2000000
@@ -17,7 +17,6 @@ set share_history
 
 setopt HIST_IGNORE_SPACE
 setopt HIST_IGNORE_DUPS
-
 
 #PATHS
 PATH=/usr/local/opt/libxml2/bin:/usr/local/opt/coreutils/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:/usr/local/opt/inetutils/libexec/gnubin:$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/env:/usr/X11:/usr/X11/bin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/usr/local/opt/coreutils/libexec/gnubin:/opt/local/bin:/opt/local/sbin:/bin::/usr/local/opt/inetutils/libexec/gnubin:$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/env:/usr/X11:/usr/X11/bin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/usr/local/opt/coreutils/libexec/gnubin:/opt/local/bin:/opt/local/sbin:$HOME/Library/Python/3.7/bin:/usr/local/opt/llvm/bin:$HOME/.emacs.d/bin:$HOME/Library/Python/3.8/bin:$HOME/node_modules/.bin:/usr/bin:/bin:/usr/sbin:/sbin:$GOBIN
@@ -97,7 +96,7 @@ function zle-line-init zle-keymap-select {
     HOSTNAME=$(cat /etc/hostname)
 
     PROMPT='╭(%B%F{cyan}'$HOSTNAME'%f%b)─(%(?.%B%F{green}%?%f%b.%B%F{red}%?%f%b))─(%B%F{green}'${vcs_info_msg_0_}'%f%b)─(%B%F{yellow}%~%f%b)
-╰(%B%F{blue}%n%f%b)─('$MODE')─%B▶%b '
+╰(%B%F{blue}%n%f%b)─('$MODE')-> '
 
     zle reset-prompt
 }
@@ -105,7 +104,11 @@ function zle-line-init zle-keymap-select {
 # Yank to the system clipboard
 function vi-yank-xclip {
     zle vi-yank
-    echo "$CUTBUFFER" | wl-copy
+    if [[ $(uname) =~ "Darwin" ]]; then
+        echo "$CUTBUFFER" | pbcopy
+    else
+        echo "$CUTBUFFER" | wl-copy
+    fi
 }
 
 zle -N vi-yank-xclip
@@ -116,9 +119,47 @@ zle -N zle-keymap-select
 
 source /usr/share/fzf/key-bindings.zsh
 
-complete -C '/bin/aws_completer' aws
-
-if [[ $(tty) =~ "/dev/tty*" ]]; then
-    sudo /usr/local/bin/tty-escape
-    kmscon -l -- /bin/zsh -i
+if [[ $(uname) =~ "Linux" ]]; then
+    complete -C '/bin/aws_completer' aws
 fi
+
+if [[ $(uname) =~ "Linux" ]]; then
+    if [[ $(tty) =~ "/dev/tty*" ]]; then
+        if [[ $(tty) =~ "/dev/tty1" ]]; then
+            trap exit SIGINT
+            PS3="Choice > "
+
+            select opt in Sway Plasma i3; do
+                case $opt in
+                    Plasma)
+                        if ! startplasma-wayland; then
+                            exit
+                        fi
+                        ;;
+                    Sway)
+                        if ! sway; then
+                            exit
+                        fi
+                        ;;
+                    i3)
+                        if ! startx; then
+                            exit
+                        fi
+                        ;;
+                esac
+            done
+
+            exit
+        fi
+
+        sudo /usr/local/bin/tty-escape
+    fi
+fi
+
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

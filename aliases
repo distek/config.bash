@@ -1,13 +1,19 @@
 if [[ $(uname) == "Linux" ]]; then
-    #source /usr/share/bash-completion/completions/systemctl
-    #alias sc="sudo systemctl"
-    #complete -F _systemctl sc
-    alias pacman="sudo pacman"
-    alias fsbackup='sudo rsync -aAXv / --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found","/home/*"} $(date +%Y-%m-%d_%H-%M)'
-    alias ncmpc="ncmpc -C --host=127.0.2.1"
-    alias xclip="xclip -sel clip"
-    alias dmesg='dmesg --color=always'
-    alias update="yay -Syu --devel --timeupdate --sudoloop"
+	#source /usr/share/bash-completion/completions/systemctl
+	#alias sc="sudo systemctl"
+	#complete -F _systemctl sc
+	alias pacman="sudo pacman"
+	alias fsbackup='sudo rsync -aAXv / --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found","/home/*"} $(date +%Y-%m-%d_%H-%M)'
+	alias ncmpc="ncmpc -C --host=127.0.2.1"
+	alias xclip="xclip -sel clip"
+	alias dmesg='dmesg --color=always'
+	alias open="xdg-open"
+
+	function update() {
+		sudo pacman-key --init
+		sudo pacman-key --populate archlinux
+		yay -Syu --devel --timeupdate --sudoloop
+	}
 fi
 
 alias fuckoff="sudo killall -s SIGKILL"
@@ -17,10 +23,6 @@ alias devnull="cat > /dev/null"
 alias ip='ip -color=auto'
 alias cat="bat -p --pager=never"
 alias lg="lazygit"
-
-function pcd() {
-    cd "$(projects select)"
-}
 
 alias pdel="projects del"
 alias psave="projects save $1"
