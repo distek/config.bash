@@ -117,7 +117,7 @@ bindkey -M vicmd 'y' vi-yank-xclip
 zle -N zle-line-init
 zle -N zle-keymap-select
 
-source /usr/share/fzf/key-bindings.zsh
+source ~/.local/share/fzf/key-bindings.zsh
 
 if [[ $(uname) =~ "Linux" ]]; then
     complete -C '/bin/aws_completer' aws
