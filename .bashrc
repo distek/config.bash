@@ -1,148 +1,158 @@
-# .bashrc
+#!/usr/bin/env bash
 
-TERM=xterm-256color
-
-
-# Source global definitions
-if [ -f /etc/bashrc ]; then
-	. /etc/bashrc
-fi
-
-# User specific environment
-if ! [[ "$PATH" =~ "$HOME/.local/bin:$HOME/bin:" ]]
-then
-    PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-fi
-
-export BASHCONF=$HOME/.config/bash
-
-export PATH=$HOME/.local/bin:$PATH:$HOME/opt/REAPER/:$HOME/opt/firefox/:$HOME/.gem/ruby/2.6.0/bin:$HOME/.gem/ruby/2.7.0/bin:$HOME/Programming/golang/bin:$HOME/.cargo/bin
-export VST_PATH=$VST_PATH:$HOME/wineVSTs/so/:/usr/lib/vst/:/usr/lib/vst3/:$HOME/wineVSTs/linvst-so:/usr/lib/vst/carla.vst:$HOME/.vst:$HOME/.vst3
-export GOPATH=$HOME/Programming/golang
-export GOSRC=$HOME/Programming/golang/src
-export GOME=$HOME/Programming/golang/src/local/distek.local
-export GOGITHUB=$HOME/Programming/golang/src/github.com/distek
-
-
-bind 'set show-all-if-ambiguous on'
-bind 'set completion-ignore-case on'
-
-shopt -s direxpand
-shopt -s histappend
-
-export HISTFILESIZE=2000000
-export HISTSIZE=2000000
-export HISTTIMEFORMAT='%F_%T '
-export HISTCONTROL=ignoreboth
-
-PROMPT_COMMAND='history -a'
-
-if [ -f $HOME/.profile ]; then
-    . $HOME/.profile
-fi
-
+# Init {{{
 # If not running interactively, don't do anything
-[[ $- != *i* ]] && return
+case $- in
+*i*) ;;
+*) return ;;
+esac
 
-export LESS_TERMCAP_mb=$'\e[1;32m'
-export LESS_TERMCAP_md=$'\e[1;32m'
-export LESS_TERMCAP_me=$'\e[0m'
-export LESS_TERMCAP_se=$'\e[0m'
-export LESS_TERMCAP_so=$'\e[01;33m'
-export LESS_TERMCAP_ue=$'\e[0m'
-export LESS_TERMCAP_us=$'\e[1;4;31m'
+. ~/.config/shell/env
+. ~/.config/shell/aliases
+. ~/.config/shell/functions
+. ~/.config/shell/tokens
 
-GPG_TTY=$(tty)
-export GPG_TTY
+. ~/.config/shell/fzf/key-bindings.bash
+# }}}
 
-# get current branch in git repo
-parse_git_branch() {
-	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
-	if [ ! "${BRANCH}" == "" ]; then
-		STAT=`parse_git_dirty`
-		echo "${BRANCH}${STAT}"
+# Colors {{{
+BLACK="\e[30m"
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW="\e[33m"
+BLUE="\e[34m"
+MAGENTA="\e[35m"
+CYAN="\e[36m"
+WHITE="\e[37m"
+NORMAL="\e[0m"
+# }}}
+
+# Vi-mode {{{
+bind 'set editing-mode vi'
+bind 'set show-mode-in-prompt on'
+bind 'set vi-cmd-mode-string "└['${YELLOW}'NRM'${NORMAL}']─> \1\e[2 q\2"'}
+bind 'set vi-ins-mode-string "└['${CYAN}'INS'${NORMAL}']─> \1\e[6 q\2"'
+bind 'set keymap vi-insert'
+bind '"\C-A": beginning-of-line'
+bind '"\C-B": backward-char'
+bind '"\C-D": delete-char'
+bind '"\C-E": end-of-line'
+bind '"\C-F": forward-char'
+bind '"\C-K": kill-line'
+bind '"\C-L": clear-screen'
+bind '"\C-N": next-history'
+bind '"\C-P": previous-history'
+bind '"\C-O": operate-and-get-next'
+
+bind '"\e.": yank-last-arg'
+bind '"\e\177": backward-kill-word'
+bind '"\e0": digit-argument'
+bind '"\e1": digit-argument'
+bind '"\e2": digit-argument'
+bind '"\e3": digit-argument'
+bind '"\e4": digit-argument'
+bind '"\e5": digit-argument'
+bind '"\e6": digit-argument'
+bind '"\e7": digit-argument'
+bind '"\e8": digit-argument'
+bind '"\e9": digit-argument'
+bind '"\eb": backward-word'
+
+bind 'set keyseq-timeout 0'
+
+set keyseq-timeout 0
+# }}}
+
+# Prompt {{{
+_gitBranch() {
+	local branch=$(git branch 2>/dev/null | grep "*" | sed 's/*\ //')
+	if [ -z "$branch" ]; then
+		echo -en "${BLACK}-${NORMAL}"
 	else
-		echo "-"
+		echo -en "${BLUE}${branch}${NORMAL}"
 	fi
+
 }
 
-# get current status of git repo
-parse_git_dirty() {
-	status=`git status 2>&1 | tee`
-	dirty=`echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
-	untracked=`echo -n "${status}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
-	ahead=`echo -n "${status}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
-	newfile=`echo -n "${status}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
-	renamed=`echo -n "${status}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
-	deleted=`echo -n "${status}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
-	bits=''
-	if [ "${renamed}" == "0" ]; then
-		bits=">${bits}"
-	fi
-	if [ "${ahead}" == "0" ]; then
-		bits="*${bits}"
-	fi
-	if [ "${newfile}" == "0" ]; then
-		bits="+${bits}"
-	fi
-	if [ "${untracked}" == "0" ]; then
-		bits="?${bits}"
-	fi
-	if [ "${deleted}" == "0" ]; then
-		bits="x${bits}"
-	fi
-	if [ "${dirty}" == "0" ]; then
-		bits="!${bits}"
-	fi
-	if [ ! "${bits}" == "" ]; then
-		echo " ${bits}"
+_errTest() {
+	if (($1 != 0)); then
+		echo -en ${RED}
 	else
-		echo ""
+		echo -en ${GREEN}
 	fi
+
+	echo -e $1${NORMAL}
 }
 
-nonzero_return() {
-    eval exitVal=$(echo $?)
-    if [[ $exitVal > 0 ]]; then
-        echo -e "\e[31m$exitVal\e[0m"
-    else
-        echo -e "\e[32m$exitVal\e[0m"
-    fi
+_pwd() {
+	local dirs=($(echo "$PWD" | sed "s#$HOME#~#" | sed 's/\//\n/g'))
+
+	if [[ "$PWD" == "$HOME" ]]; then
+		echo "~"
+
+		return
+	fi
+
+	local count=0
+	for i in "${dirs[@]}"; do
+		if [[ "$i" =~ "~" ]]; then
+			echo -n "~"
+			let count++
+			continue
+		fi
+
+		if ((count == ${#dirs[@]} - 1)); then
+			echo -n "/${i}"
+
+			return
+		else
+			if ((${#i} > 3)); then
+				echo -n "/${i:0:3}…"
+			else
+				echo -n "/${i}"
+			fi
+
+			let count++
+		fi
+	done
 }
 
-PROMPT_DIRTRIM=3
-PS1="╭[\[\e[36m\]\h\[\e[m\]]─[\[\e[33m\]\w\[\e[m\]]─[\`nonzero_return\`]─[\[\e[36m\]\`parse_git_branch\`\[\e[m\]]\n"
+_prompt() {
+	PS1="${NORMAL}┌[${GREEN}\h${NORMAL}]─[\$(_gitBranch)]─[\$(_errTest $?)]─[${YELLOW}\$(_pwd)${NORMAL}]\r\n${NORMAL}"
+}
 
-# Bottom of prompt is in ~/.inputrc
+PROMPT_COMMAND=_prompt
+# }}}
 
-[ -r /usr/share/bash-completion/bash_completion ] && . /usr/share/bash-completion/bash_completion
+# Linux specific{{{
+if [[ $(uname) =~ "Linux" ]]; then
+	if [[ $(tty) =~ "/dev/tty1" ]]; then
+		trap exit SIGINT
+		PS3="Choice > "
 
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
+		select opt in Sway Plasma i3; do
+			case $opt in
+			Plasma)
+				if ! startplasma-wayland; then
+					exit
+				fi
+				;;
+			Sway)
+				if ! sway; then
+					exit
+				fi
+				;;
+			i3)
+				if ! startx; then
+					exit
+				fi
+				;;
+			esac
+		done
 
-if [ -f $BASHCONF/aliases ]; then
-    . $BASHCONF/aliases
+		exit
+	fi
+
+	sudo /usr/local/bin/tty-escape
 fi
-
-if [ -f $BASHCONF/functions ]; then
-    . $BASHCONF/functions
-fi
-
-bind -m emacs-standard '"\er": redraw-current-line'
-bind -m emacs-standard -x '"\C-r": __fzf_history__'
-
-bind -m vi-insert '"\er": redraw-current-line'
-bind -m vi-insert -x '"\C-r": __fzf_history__'
-
-bind -m vi-command '"\er": redraw-current-line'
-bind -m vi-command -x '"\C-r": __fzf_history__'
-
-
-# This is dumb
-# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export PATH="$PATH:$HOME/.rvm/bin:$HOME/opt"
-
-export NODE_PATH="/home/distek/node_modules"
-
-# . $HOME/.cache/wal/colors-tty.sh
-
-complete -C /home/distek/Programming/golang/bin/gocomplete go
+# }}}
