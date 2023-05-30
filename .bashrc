@@ -49,8 +49,9 @@ export LESS_TERMCAP_us=$'\e[1;4;31m'
 # Vi-mode {{{
 bind 'set editing-mode vi'
 bind 'set show-mode-in-prompt on'
-bind 'set vi-cmd-mode-string "└['${YELLOW}'NRM'${NORMAL}']─> \1\e[2 q\2"'}
-bind 'set vi-ins-mode-string "└['${CYAN}'INS'${NORMAL}']─> \1\e[6 q\2"'
+bind 'set vi-ins-mode-string "└[\1\e[32m\2INS\1\e[0m\2]─> "'
+bind 'set vi-cmd-mode-string "└[\1\e[33m\2NOR\1\e[0m\2]─> "'
+
 bind 'set keymap vi-insert'
 bind '"\C-A": beginning-of-line'
 bind '"\C-B": backward-char'
@@ -137,7 +138,7 @@ _pwd() {
 }
 
 _prompt() {
-	PS1="${NORMAL}┌[${GREEN}\h${NORMAL}]─[\$(_gitBranch)]─[\$(_errTest $?)]─[${YELLOW}\$(_pwd)${NORMAL}]\r\n${NORMAL}"
+	PS1="\[${NORMAL}\]┌[\[${GREEN}\]\h\[${NORMAL}\]]─[\[$(_gitBranch)]─[\[$(_errTest $?)]─[\[${YELLOW}\]\[$(_pwd)\[${NORMAL}\]]\r\n\[${NORMAL}\]"
 }
 
 PROMPT_COMMAND=_prompt
