@@ -13,6 +13,17 @@ esac
 . ~/.config/shell/tokens
 
 . ~/.config/shell/fzf/key-bindings.bash
+
+shopt -s direxpand
+shopt -s histappend
+
+bind 'set show-all-if-ambiguous on'
+bind 'set completion-ignore-case on'
+
+export HISTFILESIZE=2000000
+export HISTSIZE=2000000
+export HISTTIMEFORMAT='%F_%T '
+export HISTCONTROL=ignoreboth
 # }}}
 
 # Colors {{{
@@ -25,6 +36,14 @@ MAGENTA="\e[35m"
 CYAN="\e[36m"
 WHITE="\e[37m"
 NORMAL="\e[0m"
+
+export LESS_TERMCAP_mb=$'\e[1;32m'
+export LESS_TERMCAP_md=$'\e[1;32m'
+export LESS_TERMCAP_me=$'\e[0m'
+export LESS_TERMCAP_se=$'\e[0m'
+export LESS_TERMCAP_so=$'\e[01;33m'
+export LESS_TERMCAP_ue=$'\e[0m'
+export LESS_TERMCAP_us=$'\e[1;4;31m'
 # }}}
 
 # Vi-mode {{{
