@@ -107,7 +107,12 @@ function vi-yank-xclip {
     if [[ $(uname) =~ "Darwin" ]]; then
         echo "$CUTBUFFER" | pbcopy
     else
-        echo "$CUTBUFFER" | wl-copy
+        if [[ -v WAYLAND_SESSION ]]; then
+            echo "$CUTBUFFER" | wl-copy
+        else
+            echo "$CUTBUFFER" | xsel -bi
+        fi
+
     fi
 }
 
