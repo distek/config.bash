@@ -105,13 +105,13 @@ _errTest() {
 }
 
 _pwd() {
-	local dirs=($(echo "$PWD" | sed "s#$HOME#~#" | sed 's/\//\n/g'))
-
 	if [[ "$PWD" == "$HOME" ]]; then
 		echo "~"
 
 		return
 	fi
+
+	local dirs=($(echo "$PWD" | sed "s#$HOME#~#" | sed 's/\//\n/g'))
 
 	local count=0
 	for i in "${dirs[@]}"; do
