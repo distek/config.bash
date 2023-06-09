@@ -18,6 +18,8 @@ set share_history
 setopt HIST_IGNORE_SPACE
 setopt HIST_IGNORE_DUPS
 
+setopt KSH_ARRAYS
+
 #PATHS
 PATH=/usr/local/opt/libxml2/bin:/usr/local/opt/coreutils/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:/usr/local/opt/inetutils/libexec/gnubin:$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/env:/usr/X11:/usr/X11/bin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/usr/local/opt/coreutils/libexec/gnubin:/opt/local/bin:/opt/local/sbin:/bin::/usr/local/opt/inetutils/libexec/gnubin:$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/env:/usr/X11:/usr/X11/bin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/usr/local/opt/coreutils/libexec/gnubin:/opt/local/bin:/opt/local/sbin:$HOME/Library/Python/3.7/bin:/usr/local/opt/llvm/bin:$HOME/.emacs.d/bin:$HOME/Library/Python/3.8/bin:$HOME/node_modules/.bin:/usr/bin:/bin:/usr/sbin:/sbin:$GOBIN
 
@@ -75,6 +77,39 @@ KEYTIMEOUT=1
 
 precmd_functions+=(_fix_cursor)
 
+function _pwd() {
+	local dirs=($(echo "$PWD" | sed "s#$HOME#~#" | sed 's/\//\n/g'))
+
+	if [[ "$PWD" == "$HOME" ]]; then
+		echo "~"
+
+		return
+	fi
+
+	local count=0
+	for i in "${dirs[@]}"; do
+		if [[ "$i" =~ "~" ]]; then
+			echo -n "~"
+			let count++
+			continue
+		fi
+
+		if ((count == ${#dirs[@]} - 1)); then
+			echo -n "/${i}"
+
+			return
+		else
+			if ((${#i} > 3)); then
+				echo -n "/${i:0:3}…"
+			else
+				echo -n "/${i}"
+			fi
+
+			let count++
+		fi
+	done
+}
+
 function zle-line-init zle-keymap-select {
     MODE="${${KEYMAP/vicmd/NML}/(main|viins)/INS}"
 
@@ -95,8 +130,10 @@ function zle-line-init zle-keymap-select {
 
     HOSTNAME=$(cat /etc/hostname)
 
-    PROMPT='╭(%B%F{cyan}'$HOSTNAME'%f%b)─(%(?.%B%F{green}%?%f%b.%B%F{red}%?%f%b))─(%B%F{green}'${vcs_info_msg_0_}'%f%b)─(%B%F{yellow}%~%f%b)
-╰(%B%F{blue}%n%f%b)─('$MODE')-> '
+    dir=$(_pwd)
+
+    PROMPT='┌[%B%F{cyan}'$HOSTNAME'%f%b]─[%(?.%B%F{green}%?%f%b.%B%F{red}%?%f%b)]─[%B%F{green}'${vcs_info_msg_0_}'%f%b]─[%B%F{yellow}'${dir}'%f%b]
+└['$MODE']─> '
 
     zle reset-prompt
 }
