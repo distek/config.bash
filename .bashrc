@@ -24,6 +24,8 @@ export HISTFILESIZE=2000000
 export HISTSIZE=2000000
 export HISTTIMEFORMAT='%F_%T '
 export HISTCONTROL=ignoreboth
+
+PATH=$HOME/.local/bin:$GOBIN:$PATH
 # }}}
 
 # Colors {{{

@@ -21,11 +21,13 @@ setopt HIST_IGNORE_DUPS
 setopt KSH_ARRAYS
 
 #PATHS
-PATH=/usr/local/opt/libxml2/bin:/usr/local/opt/coreutils/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:/usr/local/opt/inetutils/libexec/gnubin:$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/env:/usr/X11:/usr/X11/bin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/usr/local/opt/coreutils/libexec/gnubin:/opt/local/bin:/opt/local/sbin:/bin::/usr/local/opt/inetutils/libexec/gnubin:$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/env:/usr/X11:/usr/X11/bin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/usr/local/opt/coreutils/libexec/gnubin:/opt/local/bin:/opt/local/sbin:$HOME/Library/Python/3.7/bin:/usr/local/opt/llvm/bin:$HOME/.emacs.d/bin:$HOME/Library/Python/3.8/bin:$HOME/node_modules/.bin:/usr/bin:/bin:/usr/sbin:/sbin:$GOBIN
+PATH=/usr/local/opt/libxml2/bin:/usr/local/opt/coreutils/libexec/gnubin:/usr/local/opt/coreutils/libexec/gnubin:/usr/local/opt/inetutils/libexec/gnubin:$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/env:/usr/X11:/usr/X11/bin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/usr/local/opt/coreutils/libexec/gnubin:/opt/local/bin:/opt/local/sbin:/bin::/usr/local/opt/inetutils/libexec/gnubin:$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:$HOME/.ghcup/bin:$HOME/.ghcup/env:/usr/X11:/usr/X11/bin:/Library/Frameworks/Python.framework/Versions/3.7/bin:/usr/local/opt/coreutils/libexec/gnubin:/opt/local/bin:/opt/local/sbin:$HOME/Library/Python/3.7/bin:/usr/local/opt/llvm/bin:$HOME/Library/Python/3.8/bin:$HOME/node_modules/.bin:/usr/bin:/bin:/usr/sbin:/sbin:$GOBIN:/home/busypanini/.cargo/bin
 
 FPATH=$FPATH:$HOME/.config/zsh/completions
 
 MANPATH=/usr/local/opt/coreutils/libexec/gnuman:/usr/local/share/man:$MANPATH
+
+source ~/.config/shell/fzf/key-bindings.zsh
 
 export VISUAL=nvim
 export EDITOR=nvim
@@ -159,10 +161,8 @@ bindkey -M vicmd 'y' vi-yank-xclip
 zle -N zle-line-init
 zle -N zle-keymap-select
 
-source ~/.local/share/fzf/key-bindings.zsh
-
 if [[ $(uname) =~ "Linux" ]]; then
-    complete -C '/bin/aws_completer' aws
+    #complete -C '/bin/aws_completer' aws
 fi
 
 if [[ $(uname) =~ "Linux" ]]; then
@@ -171,7 +171,7 @@ if [[ $(uname) =~ "Linux" ]]; then
             trap exit SIGINT
             PS3="Choice > "
 
-            select opt in Sway Plasma i3; do
+            select opt in Sway Plasma i3 Hyprland; do
                 case $opt in
                     Plasma)
                         if ! startplasma-wayland; then
@@ -179,12 +179,18 @@ if [[ $(uname) =~ "Linux" ]]; then
                         fi
                         ;;
                     Sway)
+                        export WLR_DRM_NO_MODIFIERS=1
                         if ! sway; then
                             exit
                         fi
                         ;;
                     i3)
                         if ! startx; then
+                            exit
+                        fi
+                        ;;
+                    Hyprland)
+                        if ! Hyprland; then
                             exit
                         fi
                         ;;
@@ -205,3 +211,4 @@ eval "$(pyenv init -)"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+

@@ -1,106 +1,114 @@
 #!/bin/bash
 
 ghist() {
-    rg "$@" $HOME/.zsh_history
-    rg "$@" $HOME/.bash_history
+	rg "$@" $HOME/.zsh_history
+	rg "$@" $HOME/.bash_history
 }
 
 __fzfcmd() {
-  [ -n "$TMUX_PANE" ] && { [ "${FZF_TMUX:-0}" != 0 ] || [ -n "$FZF_TMUX_OPTS" ]; } &&
-    echo "fzf-tmux ${FZF_TMUX_OPTS:--d${FZF_TMUX_HEIGHT:-40%}} -- " || echo "fzf"
+	[ -n "$TMUX_PANE" ] && { [ "${FZF_TMUX:-0}" != 0 ] || [ -n "$FZF_TMUX_OPTS" ]; } &&
+		echo "fzf-tmux ${FZF_TMUX_OPTS:--d${FZF_TMUX_HEIGHT:-40%}} -- " || echo "fzf"
 }
 
 __fzf_history__() {
-  local output
-  output=$(
-    builtin fc -lnr -2147483648 |
-      last_hist=$(HISTTIMEFORMAT='' builtin history 1) perl -n -l0 -e 'BEGIN { getc; $/ = "\n\t"; $HISTCMD = $ENV{last_hist} + 1 } s/^[ *]//; print $HISTCMD - $. . "\t$_" if !$seen{$_}++' |
-      FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} $FZF_DEFAULT_OPTS -n2..,.. --tiebreak=index --bind=ctrl-r:toggle-sort,ctrl-z:ignore $FZF_CTRL_R_OPTS +m --read0" $(__fzfcmd) --query "$READLINE_LINE"
-  ) || return
-  READLINE_LINE=${output#*$'\t'}
-  if [ -z "$READLINE_POINT" ]; then
-    echo "$READLINE_LINE"
-  else
-    READLINE_POINT=0x7fffffff
-  fi
+	local output
+	output=$(
+		builtin fc -lnr -2147483648 |
+			last_hist=$(HISTTIMEFORMAT='' builtin history 1) perl -n -l0 -e 'BEGIN { getc; $/ = "\n\t"; $HISTCMD = $ENV{last_hist} + 1 } s/^[ *]//; print $HISTCMD - $. . "\t$_" if !$seen{$_}++' |
+			FZF_DEFAULT_OPTS="--height ${FZF_TMUX_HEIGHT:-40%} $FZF_DEFAULT_OPTS -n2..,.. --tiebreak=index --bind=ctrl-r:toggle-sort,ctrl-z:ignore $FZF_CTRL_R_OPTS +m --read0" $(__fzfcmd) --query "$READLINE_LINE"
+	) || return
+	READLINE_LINE=${output#*$'\t'}
+	if [ -z "$READLINE_POINT" ]; then
+		echo "$READLINE_LINE"
+	else
+		READLINE_POINT=0x7fffffff
+	fi
 }
 
 # fkill - kill process
 fkill() {
-  local pid
-  pid=$(ps -ef | sed 1d | fzf -m | awk '{print $2}')
+	local pid
+	pid=$(ps -ef | sed 1d | fzf -m | awk '{print $2}')
 
-  if [ "x$pid" != "x" ]
-  then
-    echo $pid | xargs kill -${1:-9}
-  fi
+	if [ "x$pid" != "x" ]; then
+		echo $pid | xargs kill -${1:-9}
+	fi
 }
 
 function mkbak() {
-    cp -r "$1" "$1.bak"
+	cp -r "$1" "$1.bak"
 }
 
 function spell() {
-    echo $1 | hunspell -d en_US
+	echo $1 | hunspell -d en_US
 }
 
 function ix() {
-    local opts
-    local OPTIND
+	local opts
+	local OPTIND
 
-    [ -f "$HOME/.netrc" ] && opts='-n'
-    while getopts ":hd:i:n:" x; do
-        case $x in
-            h) echo "ix [-d ID] [-i ID] [-n N] [opts]"; return;;
-            d) $echo curl $opts -X DELETE ix.io/$OPTARG; return;;
-            i) opts="$opts -X PUT"; local id="$OPTARG";;
-            n) opts="$opts -F read:1=$OPTARG";;
-        esac
-    done
+	[ -f "$HOME/.netrc" ] && opts='-n'
+	while getopts ":hd:i:n:" x; do
+		case $x in
+		h)
+			echo "ix [-d ID] [-i ID] [-n N] [opts]"
+			return
+			;;
+		d)
+			$echo curl $opts -X DELETE ix.io/$OPTARG
+			return
+			;;
+		i)
+			opts="$opts -X PUT"
+			local id="$OPTARG"
+			;;
+		n) opts="$opts -F read:1=$OPTARG" ;;
+		esac
+	done
 
-    shift $(($OPTIND - 1))
+	shift $(($OPTIND - 1))
 
-    [ -t 0 ] && {
-        local filename="$1"
-        shift
-        [ "$filename" ] && {
-            curl $opts -F f:1=@"$filename" $* ix.io/$id
-            return
-        }
-        echo "^C to cancel, ^D to send."
-    }
+	[ -t 0 ] && {
+		local filename="$1"
+		shift
+		[ "$filename" ] && {
+			curl $opts -F f:1=@"$filename" $* ix.io/$id
+			return
+		}
+		echo "^C to cancel, ^D to send."
+	}
 
-    curl $opts -F f:1='<-' $* ix.io/$id
+	curl $opts -F f:1='<-' $* ix.io/$id
 }
 
 # Fuzzy find files and display preview of file
 function vf() {
-    f=$(fzf --preview-window=right:75% --preview "bat --color=always --style=numbers {}")
+	f=$(fzf --preview-window=right:75% --preview "bat --color=always --style=numbers {}")
 
-    if [[ "$f" != "" ]]; then
-        vim "$f"
-    fi
+	if [[ "$f" != "" ]]; then
+		vim "$f"
+	fi
 }
 
 # Fuzzy find directories and cd into selection
 function cf() {
-    if [[ ! "$1" == '' ]]; then
-        dir="$1"
-    else
-        dir="."
-    fi
+	if [[ ! "$1" == '' ]]; then
+		dir="$1"
+	else
+		dir="."
+	fi
 
-    dest="$(fd ".*" --type d "$dir" | fzf)"
+	dest="$(fd ".*" --type d "$dir" | fzf)"
 
-    cd "$dest"
+	cd "$dest"
 }
 
 # Fuzzy search git log
 function gfz() {
-    git log --graph --color=always \
-        --format="%C(auto)%h%d %s %C(green)%C(bold)%cr" "$@" |
-        fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
-        --bind "ctrl-m:execute:
+	git log --graph --color=always \
+		--format="%C(auto)%h%d %s %C(green)%C(bold)%cr" "$@" |
+		fzf --ansi --no-sort --reverse --tiebreak=index --bind=ctrl-s:toggle-sort \
+			--bind "ctrl-m:execute:
                 (grep -o '[a-f0-9]\{7\}' | head -1 |
                 xargs -I % sh -c 'git show % | vim -c \"set filetype=git\" -c \"noremap q :q!<CR>\" -') << 'FZF-EOF'
                 {}
