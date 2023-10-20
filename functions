@@ -115,3 +115,19 @@ function gfz() {
     FZF-EOF"
 }
 
+function vide() {
+	local dir=""
+
+	for i in $(ls -1 ~/.local/share/nvim/sessions); do
+		dir=$(grep "^cd" ~/.local/share/nvim/sessions/$i | sed "s#^cd ##; s#~#$HOME#")
+		if [[ "$dir" == "$(pwd)" ]]; then
+			break
+		fi
+	done
+
+	if [[ "$dir" != "" ]]; then
+		vim +"lua MiniSessions.read('$i', {})" +"lua require('panel').toggle()" +"lua require('edgy').toggle('left')" +"lua Util.defer(function() Util.win_focus('right') end, 10)"
+	else
+		vim $session +"lua require('panel').toggle()" +"lua require('edgy').toggle('left')" +"lua Util.defer(function() Util.win_focus('right') end, 10)"
+	fi
+}
